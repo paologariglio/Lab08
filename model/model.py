@@ -1,3 +1,5 @@
+from operator import attrgetter
+
 from database import distributore_DAO
 from database.distributore_DAO import DistributoreDAO
 
@@ -62,6 +64,27 @@ class Model:
     def __ricorsione(self, sequenza_parziale, giorno, ultimo_distributore, costo_corrente, prezzi_settimana):
         """ Implementa la ricorsione """
         # TODO
+        if self.giorno>7:
+            if self.__costo_ottimo == -1 or costo_corrente < self.__costo_ottimo:
+                self.__costo_ottimo = costo_corrente
+                self.__sequenza_ottima = list(sequenza_parziale)
+            return
+
+        for id_distributore in prezzi_settimana.keys():
+            prezzo_oggi = prezzi_settimana[id_distributore][giorno -1]
+            costo_benzina = prezzo_oggi * 100
+            if ultimo_distributore is not None:
+                if ultimo_distributore != id_distributore:
+                    costo_tassa =5
+                    costo_benzina = costo_benzina + costo_tassa
+                else:
+                    costo_benzina = costo_benzina
+
+            sequenza_parziale.append(id_distributore)
+
+        self.__ricorsione(sequenza_parziale, giorno+1, ultimo_distributore, costo_corrente+costo_benzina+costo_tassa, prezzi_settimana)
+        sequenza_parziale.pop()
+
 
     def __get_prezzi_prima_settimana_mese(self, mese: int):
         """
@@ -69,3 +92,14 @@ class Model:
         :return: un dizionario: {id_distributore: [prezzo_giorno1, ..., prezzo_giorno7]}
         """
         # TODO
+        dizionario = { }
+        for distributore in self._distributori:
+            prezzo = distributore.get_prezzi()
+
+
+            prezzi_filtrati = [p for p in prezzo if p.data.month == mese and 1<=p.data.day<=7]
+            prezzi_filtrati.sort(key=attrgetter("data.day"))
+
+            dizionario[distributore.id] = [p.prezzo_litro for p in prezzi_filtrati]
+
+        return dizionario
