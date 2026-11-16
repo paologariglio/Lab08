@@ -18,7 +18,7 @@ class Distributore:
         """ Aggiorna e Restituisce la lista di prezzi (self.lista_prezzi) associati al distributore"""
         # TODO
         if lista_prezzi is None:
-            lista_prezzi.append(PrezzoDAO.get_prezzi(self.id))
+            self.lista_prezzi = PrezzoDAO.get_prezzi(self.id)
         return self.lista_prezzi
 
     def __eq__(self, other):
